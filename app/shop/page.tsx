@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 
@@ -13,7 +14,15 @@ export default async function ShopPage() {
           {products.map((p: any) => (
             <div key={String(p._id)} className="rounded-lg bg-white p-4 shadow-sm">
               {p.image ? (
-                <img src={p.image} alt={p.name} className="aspect-[4/5] w-full rounded object-cover" />
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded">
+                  <Image
+                    src={p.image}
+                    alt={p.name}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                    className="object-cover"
+                  />
+                </div>
               ) : (
                 <div className="aspect-[4/5] w-full rounded bg-[#E8DFD0]" />
               )}
