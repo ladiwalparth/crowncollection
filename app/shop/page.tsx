@@ -3,6 +3,9 @@ import Link from "next/link";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 import FilterBar from "./FilterBar";
+import Pagination from "./Pagination";
+
+const PER_PAGE = 3;
 
 function escapeRegex(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -11,9 +14,16 @@ function escapeRegex(text: string) {
 export default async function ShopPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sort?: string; category?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    sort?: string;
+    category?: string;
+    price?: string;
+    page?: string;
+  }>;
 }) {
-  const { q = "", sort = "", category = "" } = await searchParams;
+  const { q = "", sort = "", category = "", price = "", page = "1" } =
+    await searchParams;
   await dbConnect();
 
   const filter: Record<string, unknown> = {};
@@ -22,13 +32,34 @@ export default async function ShopPage({
     const regex = { $regex: escapeRegex(q), $options: "i" };
     filter.$or = [{ name: regex }, { description: regex }, { category: regex }];
   }
+  if (price) {
+    const [minStr, maxStr] = price.split("-");
+    const range: Record<string, number> = {};
+    const min = Number(minStr);
+    const max = Number(maxStr);
+    if (minStr !== "" && !isNaN(min)) range.$gte = min;
+    if (maxStr !== "" && !isNaN(max)) range.$lte = max;
+    if (Object.keys(range).length > 0) filter.price = range;
+  }
 
   let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
   if (sort === "price_asc") sortOption = { price: 1 };
   if (sort === "price_desc") sortOption = { price: -1 };
 
-  const products = await Product.find(filter).sort(sortOption).lean();
-  const categories = (await Product.distinct("category")).filter(Boolean) as string[];
+  const currentPage = Math.max(1, Number(page) || 1);
+
+  const totalCount = await Product.countDocuments(filter);
+  const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
+
+  const products = await Product.find(filter)
+    .sort(sortOption)
+    .skip((currentPage - 1) * PER_PAGE)
+    .limit(PER_PAGE)
+    .lean();
+
+  const categories = (await Product.distinct("category")).filter(
+    Boolean
+  ) as string[];
 
   return (
     <main className="min-h-dvh bg-[#F7F3EC] px-6 py-12">
@@ -40,15 +71,16 @@ export default async function ShopPage({
           currentQuery={q}
           currentSort={sort}
           currentCategory={category}
+          currentPrice={price}
         />
 
-        {q && (
-          <p className="mt-4 text-sm text-[#4A3728]">
-            {products.length} result{products.length === 1 ? "" : "s"} for “{q}”
-          </p>
-        )}
+        <p className="mt-4 text-sm text-[#4A3728]">
+          {totalCount} product{totalCount === 1 ? "" : "s"}
+          {q ? ` for “${q}”` : ""}
+          {totalPages > 1 ? ` · Page ${currentPage} of ${totalPages}` : ""}
+        </p>
 
-        <div className="mt-8 grid grid-cols-2 gap-6 md:grid-cols-3">
+        <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-3">
           {products.map((p: any) => (
             <Link
               key={String(p._id)}
@@ -79,6 +111,12 @@ export default async function ShopPage({
             No products found. Try a different search or clear the filters.
           </p>
         )}
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          searchParams={{ q, sort, category, price }}
+        />
       </div>
     </main>
   );
