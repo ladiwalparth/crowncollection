@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
-import AddToCart from "@/components/AddToCart";
+import WhatsAppBuy from "@/components/WhatsAppBuy";
 
 export default async function ProductPage({
   params,
@@ -34,7 +34,10 @@ export default async function ProductPage({
             <p className="mt-2 text-sm text-[#4A3728]">
               {p.stock > 0 ? `In stock: ${p.stock}` : "Out of stock"}
             </p>
-            <AddToCart product={{ id: String(p._id), name: p.name, price: p.price, image: p.image, slug: p.slug }} />
+            <WhatsAppBuy name={p.name} price={p.price} slug={p.slug} />
+<p className="mt-3 text-sm text-[#4A3728]">
+  Tap the button to chat with us on WhatsApp — we confirm availability and arrange delivery.
+</p>
           </div>
         </div>
       </div>
