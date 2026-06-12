@@ -58,6 +58,8 @@ export default function MenuDrawer({ categories }: { categories: CategoryTile[] 
               <button onClick={() => setShowCats(true)} className={`${itemClass} flex w-full items-center justify-between`}>
                 Categories <span aria-hidden>›</span>
               </button>
+              <Link href="/about" onClick={close} className={itemClass}>About</Link>
+              <Link href="/contact" onClick={close} className={itemClass}>Contact</Link>
               <div className="mt-8 border-t border-[#D8CDBA] pt-6">
                 <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer" className="block py-2 text-sm uppercase tracking-[0.2em] text-[#4A3728] hover:text-[#B08D57]">WhatsApp</a>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="block py-2 text-sm uppercase tracking-[0.2em] text-[#4A3728] hover:text-[#B08D57]">Instagram</a>
