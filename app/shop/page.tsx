@@ -1,11 +1,10 @@
-import Image from "next/image";
-import Link from "next/link";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 import FilterBar from "./FilterBar";
 import Pagination from "./Pagination";
+import ProductCard from "@/components/ProductCard";
 
-const PER_PAGE = 3;
+const PER_PAGE = 12;
 
 function escapeRegex(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -47,7 +46,6 @@ export default async function ShopPage({
   if (sort === "price_desc") sortOption = { price: -1 };
 
   const currentPage = Math.max(1, Number(page) || 1);
-
   const totalCount = await Product.countDocuments(filter);
   const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
 
@@ -62,61 +60,30 @@ export default async function ShopPage({
   ) as string[];
 
   return (
-    <main className="min-h-dvh bg-[#F7F3EC] px-6 py-12">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-semibold text-[#2B2622]">Shop</h1>
+    <main className="min-h-dvh bg-[#F7F3EC] px-6 py-14">
+      <div className="mx-auto max-w-6xl">
+        <p className="text-xs uppercase tracking-[0.3em] text-[#B08D57]">The Collection</p>
+        <h1 className="mt-2 text-3xl text-[#2B2622] sm:text-4xl">Shop</h1>
 
-        <FilterBar
-          categories={categories}
-          currentQuery={q}
-          currentSort={sort}
-          currentCategory={category}
-          currentPrice={price}
-        />
+        <FilterBar categories={categories} currentQuery={q} currentSort={sort} currentCategory={category} currentPrice={price} />
 
-        <p className="mt-4 text-sm text-[#4A3728]">
+        <p className="mt-5 text-sm text-[#4A3728]">
           {totalCount} product{totalCount === 1 ? "" : "s"}
           {q ? ` for “${q}”` : ""}
           {totalPages > 1 ? ` · Page ${currentPage} of ${totalPages}` : ""}
         </p>
 
-        <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-3">
+        <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
           {products.map((p: any) => (
-            <Link
-              key={String(p._id)}
-              href={`/product/${p.slug}`}
-              className="rounded-lg bg-white p-4 shadow-sm transition hover:shadow-md"
-            >
-              {p.image ? (
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded">
-                  <Image
-                    src={p.image}
-                    alt={p.name}
-                    fill
-                    sizes="(max-width: 768px) 50vw, 33vw"
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="aspect-[4/5] w-full rounded bg-[#E8DFD0]" />
-              )}
-              <h2 className="mt-3 text-sm font-medium text-[#2B2622]">{p.name}</h2>
-              <p className="mt-1 text-[#B08D57]">₹{p.price}</p>
-            </Link>
+            <ProductCard key={String(p._id)} product={p} />
           ))}
         </div>
 
         {products.length === 0 && (
-          <p className="mt-8 text-[#4A3728]">
-            No products found. Try a different search or clear the filters.
-          </p>
+          <p className="mt-10 text-[#4A3728]">No products found. Try a different search or clear the filters.</p>
         )}
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          searchParams={{ q, sort, category, price }}
-        />
+        <Pagination currentPage={currentPage} totalPages={totalPages} searchParams={{ q, sort, category, price }} />
       </div>
     </main>
   );

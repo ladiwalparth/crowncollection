@@ -3,6 +3,7 @@ import Link from "next/link";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 import { WHATSAPP_NUMBER } from "@/lib/config";
+import ProductCard from "@/components/ProductCard";
 
 export default async function Home() {
   await dbConnect();
@@ -65,17 +66,7 @@ export default async function Home() {
           </div>
           <div className="mt-6 grid grid-cols-2 gap-6 md:grid-cols-4">
             {featured.map((p: any) => (
-              <Link key={String(p._id)} href={`/product/${p.slug}`} className="rounded-lg bg-white p-4 shadow-sm transition hover:shadow-md">
-                {p.image ? (
-                  <div className="relative aspect-[4/5] w-full overflow-hidden rounded">
-                    <Image src={p.image} alt={p.name} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover" />
-                  </div>
-                ) : (
-                  <div className="aspect-[4/5] w-full rounded bg-[#E8DFD0]" />
-                )}
-                <h3 className="mt-3 text-sm font-medium text-[#2B2622]">{p.name}</h3>
-                <p className="mt-1 text-[#B08D57]">₹{p.price}</p>
-              </Link>
+              <ProductCard key={String(p._id)} product={p} />
             ))}
           </div>
         </section>
