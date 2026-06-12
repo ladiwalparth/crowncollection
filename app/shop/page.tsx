@@ -1,9 +1,17 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
+import { getCategoryTiles } from "@/lib/categories";
 import FilterBar from "./FilterBar";
 import Pagination from "./Pagination";
 import ProductCard from "@/components/ProductCard";
+
+export const metadata: Metadata = {
+  title: "Shop All",
+  description:
+    "Browse handcrafted brass diyas, idols, urlis, lamps and more. Order directly on WhatsApp.",
+};
 
 const PER_PAGE = 12;
 
@@ -56,15 +64,11 @@ export default async function ShopPage({
     .limit(PER_PAGE)
     .lean();
 
-  const categories = (await Product.distinct("category")).filter(
-    Boolean
-  ) as string[];
-
-  let categoryHero = "";
-  if (category) {
-    const sample: any = await Product.findOne({ category, image: { $ne: "" } }).lean();
-    categoryHero = sample?.image ?? "";
-  }
+  const categoryTiles = await getCategoryTiles();
+  const categories = categoryTiles.map((c) => c.name);
+  const categoryHero = category
+    ? categoryTiles.find((c) => c.name === category)?.image ?? ""
+    : "";
 
   return (
     <main className="min-h-dvh bg-[#F7F3EC] pb-14">

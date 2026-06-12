@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { dbConnect } from "@/lib/db";
@@ -7,14 +9,56 @@ import ProductGallery from "@/components/ProductGallery";
 import WhatsAppBuy from "@/components/WhatsAppBuy";
 import SaveButton from "@/components/SaveButton";
 
+// cache() = if generateMetadata and the page ask for the same product
+// during the same visit, the database is only asked once.
+const getProduct = cache(async (slug: string) => {
+  await dbConnect();
+  return Product.findOne({ slug }).lean();
+});
+
+// This runs before the page renders and writes the <title>, description
+// and social-preview tags for THIS product — used by Google and WhatsApp.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = (await getProduct(slug)) as any;
+  if (!product) return { title: "Product not found" };
+
+  const title = `${product.name} — ₹${product.price}`;
+  const description =
+    (product.description || "").trim().slice(0, 155) ||
+    `Handcrafted brass ${product.name}. Order directly on WhatsApp from Crown Collection.`;
+  const image = product.image || product.images?.[0] || "";
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/product/${product.slug}` },
+    openGraph: {
+      title,
+      description,
+      url: `/product/${product.slug}`,
+      images: image ? [{ url: image, alt: product.name }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
+
 export default async function ProductPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  await dbConnect();
-  const product = await Product.findOne({ slug }).lean();
+  const product = await getProduct(slug);
   if (!product) notFound();
 
   const p = product as any;
