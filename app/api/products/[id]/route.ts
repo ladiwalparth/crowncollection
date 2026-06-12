@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 
@@ -19,6 +20,7 @@ export async function PUT(
   const data = await request.json();
   const updated = await Product.findByIdAndUpdate(id, data, { new: true });
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  revalidatePath("/", "layout");
   return NextResponse.json(updated);
 }
 
@@ -32,5 +34,6 @@ export async function DELETE(
   const { id } = await params;
   await dbConnect();
   await Product.findByIdAndDelete(id);
+  revalidatePath("/", "layout");
   return NextResponse.json({ ok: true });
 }

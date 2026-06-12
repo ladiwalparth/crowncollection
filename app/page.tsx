@@ -4,21 +4,16 @@ import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 import ProductCard from "@/components/ProductCard";
 import { WHATSAPP_NUMBER, HERO_IMAGE } from "@/lib/config";
+import { getCategoryTiles } from "@/lib/categories";
 import Reveal from "@/components/Reveal";
 
+export const revalidate = 60;
 
 export default async function Home() {
   await dbConnect();
 
   const featured = await Product.find().sort({ createdAt: -1 }).limit(4).lean();
-  const categories = ((await Product.distinct("category")).filter(Boolean) as string[]).slice(0, 6);
-
-  const categoryTiles = await Promise.all(
-    categories.map(async (c) => {
-      const sample: any = await Product.findOne({ category: c, image: { $ne: "" } }).lean();
-      return { name: c, image: sample?.image ?? "" };
-    })
-  );
+  const categoryTiles = await getCategoryTiles(6);
 
   const heroImage = HERO_IMAGE || (featured[0] as any)?.image || "";
 

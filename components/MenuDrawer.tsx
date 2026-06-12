@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { WHATSAPP_NUMBER, INSTAGRAM_URL } from "@/lib/config";
@@ -10,12 +11,27 @@ type CategoryTile = { name: string; image: string };
 export default function MenuDrawer({ categories }: { categories: CategoryTile[] }) {
   const [open, setOpen] = useState(false);
   const [showCats, setShowCats] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        setShowCats(false);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   function close() {
@@ -25,20 +41,11 @@ export default function MenuDrawer({ categories }: { categories: CategoryTile[] 
 
   const itemClass = "block py-3 text-left text-2xl text-[#2B2622] transition hover:text-[#B08D57]";
 
-  return (
+  const drawer = (
     <>
-      <button onClick={() => setOpen(true)} className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#2B2622]" aria-label="Open menu">
-        <span className="flex flex-col gap-[5px]">
-          <span className="h-px w-5 bg-[#2B2622]" />
-          <span className="h-px w-5 bg-[#2B2622]" />
-          <span className="h-px w-5 bg-[#2B2622]" />
-        </span>
-        <span className="hidden sm:inline">Menu</span>
-      </button>
-
       <div onClick={close} className={`fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300 ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} />
 
-      <aside className={`fixed inset-y-0 right-0 z-[70] w-full bg-[#F7F3EC] transition-transform duration-300 ease-out sm:w-[440px] ${open ? "translate-x-0" : "translate-x-full"}`}>
+      <aside inert={!open} className={`fixed inset-y-0 right-0 z-[70] w-full bg-[#F7F3EC] transition-transform duration-300 ease-out sm:w-[440px] ${open ? "translate-x-0" : "translate-x-full"}`}>
         <div className="flex h-14 items-center justify-end px-5">
           <button onClick={close} aria-label="Close menu" className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2B2622] text-white">✕</button>
         </div>
@@ -77,6 +84,21 @@ export default function MenuDrawer({ categories }: { categories: CategoryTile[] 
           </div>
         </div>
       </aside>
+    </>
+  );
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)} className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#2B2622]" aria-label="Open menu">
+        <span className="flex flex-col gap-[5px]">
+          <span className="h-px w-5 bg-[#2B2622]" />
+          <span className="h-px w-5 bg-[#2B2622]" />
+          <span className="h-px w-5 bg-[#2B2622]" />
+        </span>
+        <span className="hidden sm:inline">Menu</span>
+      </button>
+
+      {mounted && createPortal(drawer, document.body)}
     </>
   );
 }

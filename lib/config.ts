@@ -9,4 +9,6 @@ export const SITE_URL = "https://crowncollection.vercel.app";
 
 export const INSTAGRAM_URL = "https://instagram.com/your_handle";
 
-export const HERO_IMAGE = "https://res.cloudinary.com/dkeklsisy/image/upload/v1781237639/pkavfx85xann4prfmj1n.jpg";
+// f_auto,q_auto,w_1600 tells Cloudinary to compress + resize the hero
+// before sending it — much faster on phones than the full-size original.
+export const HERO_IMAGE = "https://res.cloudinary.com/dkeklsisy/image/upload/f_auto,q_auto,w_1600/v1781237639/pkavfx85xann4prfmj1n.jpg";

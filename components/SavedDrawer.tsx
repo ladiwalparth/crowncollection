@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { useSaved } from "@/store/saved";
@@ -20,6 +21,15 @@ export default function SavedDrawer() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   const count = mounted ? items.length : 0;
 
   const message = `Hi! I'd like to enquire about these saved items:\n\n${items
@@ -27,20 +37,11 @@ export default function SavedDrawer() {
     .join("\n\n")}`;
   const waHref = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
-  return (
+  const drawer = (
     <>
-      <button onClick={() => setOpen(true)} aria-label="Saved items" className="relative text-[#2B2622] hover:text-[#B08D57]">
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-        </svg>
-        {count > 0 && (
-          <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#B08D57] text-[10px] text-white">{count}</span>
-        )}
-      </button>
-
       <div onClick={() => setOpen(false)} className={`fixed inset-0 z-[60] bg-black/40 transition-opacity duration-300 ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} />
 
-      <aside className={`fixed inset-y-0 right-0 z-[70] flex w-full flex-col bg-[#F7F3EC] transition-transform duration-300 ease-out sm:w-[420px] ${open ? "translate-x-0" : "translate-x-full"}`}>
+      <aside inert={!open} className={`fixed inset-y-0 right-0 z-[70] flex w-full flex-col bg-[#F7F3EC] transition-transform duration-300 ease-out sm:w-[420px] ${open ? "translate-x-0" : "translate-x-full"}`}>
         <div className="flex h-14 items-center justify-between px-5">
           <p className="text-xs uppercase tracking-[0.25em] text-[#2B2622]">
             Saved items{count > 0 ? ` (${count})` : ""}
@@ -80,6 +81,21 @@ export default function SavedDrawer() {
           </div>
         )}
       </aside>
+    </>
+  );
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)} aria-label="Saved items" className="relative text-[#2B2622] hover:text-[#B08D57]">
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </svg>
+        {count > 0 && (
+          <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-[#B08D57] text-[10px] text-white">{count}</span>
+        )}
+      </button>
+
+      {mounted && createPortal(drawer, document.body)}
     </>
   );
 }

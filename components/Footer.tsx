@@ -31,7 +31,7 @@ export default function Footer() {
         © {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.
       </p>
 
-      <p aria-hidden="true" className="mt-8 -mb-3 select-none overflow-hidden whitespace-nowrap text-center font-serif uppercase leading-none tracking-[0.02em] text-[#F7F3EC] text-[clamp(2.2rem,12vw,10rem)]">
+      <p aria-hidden="true" className="mx-auto mt-8 max-w-full select-none whitespace-nowrap pb-4 text-center font-serif uppercase leading-none tracking-[0.02em] text-[#F7F3EC] text-[clamp(1.3rem,7.5vw,8rem)]">
         {BRAND_NAME}
       </p>
     </footer>
