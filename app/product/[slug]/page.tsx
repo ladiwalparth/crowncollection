@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 import WhatsAppBuy from "@/components/WhatsAppBuy";
+import SaveButton from "@/components/SaveButton";
 
 export default async function ProductPage({
   params,
@@ -54,7 +55,10 @@ export default async function ProductPage({
             <p className="mt-6 leading-relaxed text-[#4A3728]">{p.description}</p>
 
             <div className="mt-auto pt-8">
-              <WhatsAppBuy name={p.name} price={p.price} slug={p.slug} />
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <WhatsAppBuy name={p.name} price={p.price} slug={p.slug} />
+                <SaveButton variant="button" item={{ id: String(p._id), slug: p.slug, name: p.name, price: p.price, image: p.image ?? "" }} />
+              </div>
               <p className="mt-3 text-sm text-[#4A3728]">
                 Tap the button to chat with us on WhatsApp — we confirm availability, delivery and payment there.
               </p>

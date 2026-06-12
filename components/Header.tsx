@@ -3,6 +3,8 @@ import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 import { BRAND_NAME, WHATSAPP_NUMBER } from "@/lib/config";
 import MenuDrawer from "./MenuDrawer";
+import SavedDrawer from "./SavedDrawer";
+
 
 export default async function Header() {
   await dbConnect();
@@ -33,6 +35,7 @@ export default async function Header() {
           <Link href="/shop" aria-label="Search products" className="text-[#2B2622] hover:text-[#B08D57]">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-5 w-5"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
           </Link>
+          <SavedDrawer />
           <MenuDrawer categories={categories} />
         </div>
       </div>
