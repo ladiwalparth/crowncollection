@@ -27,10 +27,8 @@ export const metadata: Metadata = {
       "Premium handcrafted brass artifacts for your home and temple. Order directly on WhatsApp.",
     images: [{ url: HERO_IMAGE }],
   },
-  // GOOGLE SEARCH CONSOLE (Day 13, Step 7):
-  // when you have your verification code, remove the // from the next line
-  // and paste your code between the quotes:
-   verification: { google: "WMths6vPqrh69d95NNwRXN-IALMBP8dIetSFjWVA7tk" },
+  // Google Search Console ownership tag — do not remove
+  verification: { google: "WMths6vPqrh69d95NNwRXN-IALMBP8dIetSFjWVA7tk" },
 };
 
 export const viewport: Viewport = {

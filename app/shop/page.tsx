@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Fuse from "fuse.js";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 import { getCategoryTiles } from "@/lib/categories";
@@ -15,10 +16,6 @@ export const metadata: Metadata = {
 
 const PER_PAGE = 12;
 
-function escapeRegex(text: string) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 export default async function ShopPage({
   searchParams,
 }: {
@@ -32,14 +29,12 @@ export default async function ShopPage({
 }) {
   const { q = "", sort = "", category = "", price = "", page = "1" } =
     await searchParams;
+  const query = q.trim();
   await dbConnect();
 
+  // Filters that are NOT the search box (category + price)
   const filter: Record<string, unknown> = {};
   if (category) filter.category = category;
-  if (q) {
-    const regex = { $regex: escapeRegex(q), $options: "i" };
-    filter.$or = [{ name: regex }, { description: regex }, { category: regex }];
-  }
   if (price) {
     const [minStr, maxStr] = price.split("-");
     const range: Record<string, number> = {};
@@ -55,14 +50,45 @@ export default async function ShopPage({
   if (sort === "price_desc") sortOption = { price: -1 };
 
   const currentPage = Math.max(1, Number(page) || 1);
-  const totalCount = await Product.countDocuments(filter);
-  const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
 
-  const products = await Product.find(filter)
-    .sort(sortOption)
-    .skip((currentPage - 1) * PER_PAGE)
-    .limit(PER_PAGE)
-    .lean();
+  let products: any[] = [];
+  let totalCount = 0;
+
+  if (query) {
+    // SMART SEARCH: load the candidates that pass category/price,
+    // then fuzzy-match so small spelling mistakes still find the right items.
+    const candidates = (await Product.find(filter).sort(sortOption).lean()) as any[];
+
+    const fuse = new Fuse(candidates, {
+      keys: [
+        { name: "name", weight: 0.6 },
+        { name: "category", weight: 0.25 },
+        { name: "description", weight: 0.15 },
+      ],
+      threshold: 0.4,        // how forgiving: 0 = exact only, 1 = matches anything
+      ignoreLocation: true,  // a match counts anywhere in the text
+      minMatchCharLength: 2,
+    });
+
+    let matched = fuse.search(query).map((r) => r.item);
+
+    // Fuse returns best-match-first; only re-sort if the user chose a price sort
+    if (sort === "price_asc") matched = [...matched].sort((a, b) => a.price - b.price);
+    if (sort === "price_desc") matched = [...matched].sort((a, b) => b.price - a.price);
+
+    totalCount = matched.length;
+    products = matched.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE);
+  } else {
+    // No search text: let the database do the heavy lifting (fast pagination)
+    totalCount = await Product.countDocuments(filter);
+    products = (await Product.find(filter)
+      .sort(sortOption)
+      .skip((currentPage - 1) * PER_PAGE)
+      .limit(PER_PAGE)
+      .lean()) as any[];
+  }
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
 
   const categoryTiles = await getCategoryTiles();
   const categories = categoryTiles.map((c) => c.name);
@@ -97,7 +123,7 @@ export default async function ShopPage({
 
         <p className="mt-5 text-sm text-[#4A3728]">
           {totalCount} product{totalCount === 1 ? "" : "s"}
-          {q ? ` for “${q}”` : ""}
+          {query ? ` for “${query}”` : ""}
           {totalPages > 1 ? ` · Page ${currentPage} of ${totalPages}` : ""}
         </p>
 
@@ -108,7 +134,9 @@ export default async function ShopPage({
         </div>
 
         {products.length === 0 && (
-          <p className="mt-10 text-[#4A3728]">No products found. Try a different search or clear the filters.</p>
+          <p className="mt-10 text-[#4A3728]">
+            No products found{query ? ` for “${query}”` : ""}. Try a shorter word or clear the filters.
+          </p>
         )}
 
         <Pagination currentPage={currentPage} totalPages={totalPages} searchParams={{ q, sort, category, price }} />
