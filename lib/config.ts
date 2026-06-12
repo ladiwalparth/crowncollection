@@ -8,3 +8,5 @@ export const WHATSAPP_NUMBER = "919571107900";
 export const SITE_URL = "https://crowncollection.vercel.app";
 
 export const INSTAGRAM_URL = "https://instagram.com/your_handle";
+
+export const HERO_IMAGE = "https://res.cloudinary.com/dkeklsisy/image/upload/v1781237639/pkavfx85xann4prfmj1n.jpg";

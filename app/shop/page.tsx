@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { dbConnect } from "@/lib/db";
 import Product from "@/models/Product";
 import FilterBar from "./FilterBar";
@@ -59,11 +60,34 @@ export default async function ShopPage({
     Boolean
   ) as string[];
 
+  let categoryHero = "";
+  if (category) {
+    const sample: any = await Product.findOne({ category, image: { $ne: "" } }).lean();
+    categoryHero = sample?.image ?? "";
+  }
+
   return (
-    <main className="min-h-dvh bg-[#F7F3EC] px-6 py-14">
-      <div className="mx-auto max-w-6xl">
-        <p className="text-xs uppercase tracking-[0.3em] text-[#B08D57]">The Collection</p>
-        <h1 className="mt-2 text-3xl text-[#2B2622] sm:text-4xl">Shop</h1>
+    <main className="min-h-dvh bg-[#F7F3EC] pb-14">
+      {category && (
+        <section className="relative flex h-[40vh] min-h-[280px] w-full items-center justify-center overflow-hidden bg-[#2B2622] text-center">
+          {categoryHero && (
+            <Image src={categoryHero} alt={category} fill priority sizes="100vw" className="object-cover" />
+          )}
+          <div className="absolute inset-0 bg-black/45" />
+          <div className="relative z-10 px-6">
+            <p className="text-xs uppercase tracking-[0.35em] text-[#D9BE8C]">Category</p>
+            <h1 className="mt-3 text-4xl text-white sm:text-5xl">{category}</h1>
+          </div>
+        </section>
+      )}
+
+      <div className="mx-auto max-w-6xl px-6 pt-10">
+        {!category && (
+          <>
+            <p className="text-xs uppercase tracking-[0.3em] text-[#B08D57]">The Collection</p>
+            <h1 className="mt-2 text-3xl text-[#2B2622] sm:text-4xl">Shop</h1>
+          </>
+        )}
 
         <FilterBar categories={categories} currentQuery={q} currentSort={sort} currentCategory={category} currentPrice={price} />
 
