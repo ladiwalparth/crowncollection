@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   // GOOGLE SEARCH CONSOLE (Day 13, Step 7):
   // when you have your verification code, remove the // from the next line
   // and paste your code between the quotes:
-  // verification: { google: "paste-your-google-code-here" },
+  verification: { google: "WMths6vPqrh69d95NNwRXN-IALMBP8dIetSFjWVA7tk" },
 };
 
 export const viewport: Viewport = {
