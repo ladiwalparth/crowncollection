@@ -5,7 +5,7 @@ export const BRAND_NAME = "Crown Collection";
 export const WHATSAPP_NUMBER = "919571107900";
 
 // Your live site URL, no trailing slash
-export const SITE_URL = "https://crowncollection.vercel.app";
+export const SITE_URL = "https://www.crowncollection.shop";
 
 export const INSTAGRAM_URL = "https://instagram.com/your_handle";
 
