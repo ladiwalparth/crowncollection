@@ -28,7 +28,9 @@ export const metadata: Metadata = {
     images: [{ url: HERO_IMAGE }],
   },
   // Google Search Console ownership tag — do not remove
-  verification: { google: "WMths6vPqrh69d95NNwRXN-IALMBP8dIetSFjWVA7tk" },
+  verification: { google: ["9ld7innA1pM7XYmoW1cuNGzmuIJ9BWINTv98OlmeNlQ","WMths6vPqrh69d95NNwRXN-IALMBP8dIetSFjWVA7tk"] },
+  
+  // old <meta name="google-site-verification" content="WMths6vPqrh69d95NNwRXN-IALMBP8dIetSFjWVA7tk" />
 };
 
 export const viewport: Viewport = {
